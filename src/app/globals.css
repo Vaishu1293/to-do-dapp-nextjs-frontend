@@ -1,4 +1,21 @@
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
+@layer base {
+  :root {
+    --shadow-color: rgba(55, 53, 47, 0.09);
+    --border-color: rgba(55, 53, 47, 0.09);
+    --hover-background: rgba(55, 53, 47, 0.06);
+    --active-background: rgba(55, 53, 47, 0.16);
+  }
+
+  .dark {
+    --shadow-color: rgba(255, 255, 255, 0.094);
+    --border-color: rgba(255, 255, 255, 0.094);
+    --hover-background: rgba(255, 255, 255, 0.055);
+    --active-background: rgba(255, 255, 255, 0.03);
+  }
+}
 
 :root {
   --background: #ffffff;
