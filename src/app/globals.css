@@ -3,6 +3,16 @@
 
 @layer base {
   :root {
+    /* Light Theme Colors */
+    --background: #ffffff;
+    --foreground: #171717;
+    --bg: #F8F8F2;
+    --text: #282A3A;
+    --primary: #64CCC5;
+    --accent: #F78CA0;
+    --error: #FF6961;
+    --card: #ffffff;
+    --nav-bg: var(--primary);
     --shadow-color: rgba(55, 53, 47, 0.09);
     --border-color: rgba(55, 53, 47, 0.09);
     --hover-background: rgba(55, 53, 47, 0.06);
@@ -10,16 +20,21 @@
   }
 
   .dark {
+    /* Dark Theme Overrides */
+    --background: #0a0a0a;
+    --foreground: #ededed;
+    --bg: #1E1E2F;
+    --text: #E5E5E5;
+    --primary: #64CCC5;
+    --accent: #F78CA0;
+    --error: #FF6961;
+    --card: #2E2E42;
+    --nav-bg: #111827;
     --shadow-color: rgba(255, 255, 255, 0.094);
     --border-color: rgba(255, 255, 255, 0.094);
     --hover-background: rgba(255, 255, 255, 0.055);
     --active-background: rgba(255, 255, 255, 0.03);
   }
-}
-
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
 }
 
 @theme inline {
@@ -29,15 +44,9 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans), sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }

@@ -18,34 +18,83 @@ export default function Home() {
   };
 
   return (
-    <>
-      {/* Header */}
-      <header className="p-4 flex justify-between items-center bg-white dark:bg-[#191919] text-black dark:text-white shadow-md transition-colors">
-        <h1 className="font-bold text-lg">🧠 My DApp</h1>
-        <ThemeToggle />
-      </header>
-
-      {/* Main Content */}
-      <div className="min-h-screen bg-white text-black dark:bg-gray-900 dark:text-white p-6 sm:p-12 transition-colors duration-300">
-        <div className="max-w-3xl mx-auto">
-          <h1 className="text-4xl font-extrabold mb-8 text-center text-blue-600 dark:text-blue-400 drop-shadow-lg">
-            📝 Decentralized To-Do List
-          </h1>
-
-          {!account ? (
-            <div className="flex justify-center items-center h-40">
-              <WalletConnect onConnected={handleWalletConnected} />
-            </div>
-          ) : (
-            <>
-            <p> Add Task Form</p>
-            <p>Task List Form</p>
-              {/* <AddTaskForm account={account} provider={provider} />
-              <TaskList account={account} provider={provider} /> */}
-            </>
+    <main className="min-h-screen bg-[var(--bg)] text-[var(--text)] flex flex-col items-center p-6">
+      {/* Navbar */}
+      <nav className="bg-[var(--nav-bg)] text-white px-6 py-4 w-full max-w-3xl flex justify-between items-center rounded-t-lg">
+        <div className="text-xl font-bold">Decentralized Tasks</div>
+        <div className="flex items-center gap-4">
+          {account && (
+            <div className="text-sm">Connected: {account.slice(0, 6)}...{account.slice(-4)}</div>
           )}
+          <ThemeToggle />
         </div>
-      </div>
-    </>
+      </nav>
+
+      {/* Wallet Connection or Content */}
+      {!account ? (
+        <div className="my-12">
+          <WalletConnect onConnected={handleWalletConnected} />
+        </div>
+      ) : (
+        <>
+          {/* Task Input Area */}
+          <div className="task-input-area bg-[var(--card)] p-5 w-full max-w-3xl rounded-b-lg shadow flex gap-4">
+            <input
+              type="text"
+              className="flex-grow p-2 border border-gray-300 rounded"
+              placeholder="Add New Task..."
+            />
+            <button className="bg-[var(--accent)] text-white px-4 py-2 rounded">Add</button>
+          </div>
+
+          {/* Task List */}
+          <div className="task-list-area w-full max-w-3xl mt-6">
+            <div className="task-card bg-[var(--card)] p-4 rounded shadow mb-4 flex justify-between items-center">
+              <div className="task-content">
+                <div className="task-name text-lg">Grocery Shopping</div>
+                <div className="task-metadata text-sm text-gray-500">Added 2 days ago</div>
+              </div>
+              <div className="task-actions flex gap-2">
+                <button className="action-btn">✏️</button>
+                <button className="action-btn">🗑️</button>
+                <input type="checkbox" />
+              </div>
+            </div>
+
+            <div className="task-card bg-[var(--card)] p-4 rounded shadow mb-4 flex justify-between items-center">
+              <div className="task-content">
+                <div className="task-name line-through text-gray-400">Pay Bills</div>
+                <div className="task-metadata text-sm text-gray-500">Added 5 days ago | Completed 1 day ago</div>
+              </div>
+              <div className="task-actions flex gap-2">
+                <button className="action-btn">✏️</button>
+                <button className="action-btn">🗑️</button>
+                <input type="checkbox" checked />
+              </div>
+            </div>
+
+            <div className="task-card bg-[var(--card)] p-4 rounded shadow mb-4 flex justify-between items-center">
+              <div className="task-content">
+                <div className="task-name text-lg">Book Appointment</div>
+                <div className="task-metadata text-sm text-gray-500">Added 1 day ago</div>
+              </div>
+              <div className="task-actions flex gap-2">
+                <button className="action-btn">✏️</button>
+                <button className="action-btn">🗑️</button>
+                <input type="checkbox" />
+              </div>
+            </div>
+
+            <div className="pagination flex gap-2 justify-center mt-4">
+              <button className="page-number active bg-[var(--primary)] text-white border px-3 py-1 rounded">1</button>
+              <button className="page-number border border-gray-300 px-3 py-1 rounded">2</button>
+              <button className="page-number border border-gray-300 px-3 py-1 rounded">Next</button>
+            </div>
+          </div>
+
+          <footer className="mt-8 text-sm text-gray-500">© 2025 Decentralized To-Do List</footer>
+        </>
+      )}
+    </main>
   );
 }
