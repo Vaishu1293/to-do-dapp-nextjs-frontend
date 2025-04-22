@@ -7,6 +7,7 @@ import abi from "../constants/TodoDappABI.json";
 import Pagination from "./Pagination";
 import Modal from "./Modal";
 
+
 const CONTRACT_ADDRESS = "0x1DCbA5ACbD5e0d535e64281940C69E5618252A51";
 const CONTRACT_ABI = abi;
 const ITEMS_PER_PAGE = 3;
