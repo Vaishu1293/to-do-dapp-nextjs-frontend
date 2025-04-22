@@ -3,31 +3,35 @@
 import React, { useEffect, useState } from "react";
 import { ethers } from "ethers";
 import { Task } from "@/types";
-import abi from "../constants/TodoDappABI.json"; // ABI file must be present
-// ✅ Your deployed contract address
-const CONTRACT_ADDRESS = "0x1DCbA5ACbD5e0d535e64281940C69E5618252A51"; // ⬅️ Replace with actual
+import abi from "../constants/TodoDappABI.json";
+import Pagination from "./Pagination";
 
-// ✅ ABI of the contract (only the necessary parts)
+const CONTRACT_ADDRESS = "0x1DCbA5ACbD5e0d535e64281940C69E5618252A51";
 const CONTRACT_ABI = abi;
+const ITEMS_PER_PAGE = 10;
 
 export default function TaskList({
   account,
   provider,
+  reloadTrigger,
 }: {
   account: string;
   provider: ethers.BrowserProvider | null;
+  reloadTrigger: number;
 }) {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     if (account && provider) {
       fetchTasks();
     }
-  }, [account, provider]);
+  }, [account, provider, reloadTrigger]);
 
   const fetchTasks = async () => {
     try {
+      setLoading(true);
       const signer = await provider!.getSigner();
       const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
       const tasksFromChain = await contract.getMyTasks();
@@ -39,6 +43,36 @@ export default function TaskList({
     }
   };
 
+  const deleteTask = async (taskId: number) => {
+    try {
+      const signer = await provider!.getSigner();
+      const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
+      const tx = await contract.deleteTask(taskId);
+      await tx.wait();
+      fetchTasks();
+    } catch (error) {
+      console.error("Error deleting task:", error);
+    }
+  };
+
+  const toggleComplete = async (taskId: number) => {
+    try {
+      const signer = await provider!.getSigner();
+      const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
+      const tx = await contract.toggleTaskStatus(taskId);
+      await tx.wait();
+      fetchTasks();
+    } catch (error) {
+      console.error("Error toggling task status:", error);
+    }
+  };
+
+  const totalPages = Math.ceil(tasks.length / ITEMS_PER_PAGE);
+  const paginatedTasks = tasks.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
   if (loading) {
     return <div className="text-center text-gray-500 mt-8">Loading tasks...</div>;
   }
@@ -49,7 +83,7 @@ export default function TaskList({
 
   return (
     <>
-      {tasks.map((task) => (
+      {paginatedTasks.map((task) => (
         <div
           key={task.id.toString()}
           className="task-card bg-[var(--card)] p-4 rounded shadow mb-4 flex justify-between items-center"
@@ -65,12 +99,22 @@ export default function TaskList({
             </div>
           </div>
           <div className="task-actions flex gap-2">
-            <button className="action-btn">✏️</button>
-            <button className="action-btn">🗑️</button>
-            <input type="checkbox" checked={task.completed} readOnly className="accent-[var(--primary)]" />
+            <button className="action-btn" onClick={() => deleteTask(task.id)}>🗑️</button>
+            <input
+              type="checkbox"
+              checked={task.completed}
+              onChange={() => toggleComplete(task.id)}
+              className="accent-[var(--primary)] cursor-pointer"
+            />
           </div>
         </div>
       ))}
+
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={(page) => setCurrentPage(page)}
+      />
     </>
   );
 }
