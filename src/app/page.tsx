@@ -1,13 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ethers } from "ethers";
 import WalletConnect from "../components/WalletConnect";
 import ThemeToggle from "../theme/ThemeToggle";
+import AddTaskForm from "@/components/AddTaskForm";
+import TaskList from "@/components/TaskList";
+import abi from "../constants/TodoDappABI.json"; // ABI file must be present
+
+const CONTRACT_ADDRESS = "0x1DCbA5ACbD5e0d535e64281940C69E5618252A51"; // Replace with real address
 
 export default function Home() {
   const [account, setAccount] = useState<string>("");
   const [provider, setProvider] = useState<ethers.BrowserProvider | null>(null);
+  const [tasks, setTasks] = useState<any[]>([]);
 
   const handleWalletConnected = (
     address: string,
@@ -16,6 +22,22 @@ export default function Home() {
     setAccount(address);
     setProvider(providerInstance);
   };
+
+  useEffect(() => {
+    const fetchTasks = async () => {
+      if (!provider || !account) return;
+      try {
+        const signer = await provider.getSigner();
+        const contract = new ethers.Contract(CONTRACT_ADDRESS, abi, signer);
+        const taskData = await contract.getMyTasks();
+        setTasks(taskData);
+      } catch (err) {
+        console.error("Failed to fetch tasks:", err);
+      }
+    };
+
+    fetchTasks();
+  }, [provider, account]);
 
   return (
     <main className="min-h-screen bg-[var(--bg)] text-[var(--text)] flex flex-col items-center p-6">
@@ -38,58 +60,13 @@ export default function Home() {
       ) : (
         <>
           {/* Task Input Area */}
-          <div className="task-input-area bg-[var(--card)] p-5 w-full max-w-3xl rounded-b-lg shadow flex gap-4">
-            <input
-              type="text"
-              className="flex-grow p-2 border border-gray-300 rounded"
-              placeholder="Add New Task..."
-            />
-            <button className="bg-[var(--accent)] text-white px-4 py-2 rounded">Add</button>
+          <div className="w-full max-w-3xl">
+            <AddTaskForm account={account} provider={provider} />
           </div>
 
           {/* Task List */}
           <div className="task-list-area w-full max-w-3xl mt-6">
-            <div className="task-card bg-[var(--card)] p-4 rounded shadow mb-4 flex justify-between items-center">
-              <div className="task-content">
-                <div className="task-name text-lg">Grocery Shopping</div>
-                <div className="task-metadata text-sm text-gray-500">Added 2 days ago</div>
-              </div>
-              <div className="task-actions flex gap-2">
-                <button className="action-btn">✏️</button>
-                <button className="action-btn">🗑️</button>
-                <input type="checkbox" />
-              </div>
-            </div>
-
-            <div className="task-card bg-[var(--card)] p-4 rounded shadow mb-4 flex justify-between items-center">
-              <div className="task-content">
-                <div className="task-name line-through text-gray-400">Pay Bills</div>
-                <div className="task-metadata text-sm text-gray-500">Added 5 days ago | Completed 1 day ago</div>
-              </div>
-              <div className="task-actions flex gap-2">
-                <button className="action-btn">✏️</button>
-                <button className="action-btn">🗑️</button>
-                <input type="checkbox" checked />
-              </div>
-            </div>
-
-            <div className="task-card bg-[var(--card)] p-4 rounded shadow mb-4 flex justify-between items-center">
-              <div className="task-content">
-                <div className="task-name text-lg">Book Appointment</div>
-                <div className="task-metadata text-sm text-gray-500">Added 1 day ago</div>
-              </div>
-              <div className="task-actions flex gap-2">
-                <button className="action-btn">✏️</button>
-                <button className="action-btn">🗑️</button>
-                <input type="checkbox" />
-              </div>
-            </div>
-
-            <div className="pagination flex gap-2 justify-center mt-4">
-              <button className="page-number active bg-[var(--primary)] text-white border px-3 py-1 rounded">1</button>
-              <button className="page-number border border-gray-300 px-3 py-1 rounded">2</button>
-              <button className="page-number border border-gray-300 px-3 py-1 rounded">Next</button>
-            </div>
+          <TaskList account={account} provider={provider} />
           </div>
 
           <footer className="mt-8 text-sm text-gray-500">© 2025 Decentralized To-Do List</footer>
