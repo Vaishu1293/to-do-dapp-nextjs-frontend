@@ -32,6 +32,8 @@ export default function TaskList({
     const [selectedTask, setSelectedTask] = useState<Task | null>(null);
     const [filter, setFilter] = useState<FilterType>("pending");
 
+    
+
     useEffect(() => {
         if (account && provider) {
             fetchTasks();
