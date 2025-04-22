@@ -2,18 +2,27 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { ethers } from "ethers";
+import { Eip1193Provider } from "ethers";
 
-// Type for Ethereum provider from MetaMask
-interface EthereumProvider extends ethers.Eip1193Provider {
-  isMetaMask?: boolean;
-  providers?: EthereumProvider[];
-  request: (args: { method: string; params?: unknown[] }) => Promise<unknown>;
-  on?: (event: string, handler: (...args: unknown[]) => void) => void;
+declare global {
+  interface Window {
+    ethereum?: import("ethers").Eip1193Provider & {
+      isMetaMask?: boolean;
+      providers?: (import("ethers").Eip1193Provider & { isMetaMask?: boolean })[];
+    };
+  }
 }
 
-// Filter for MetaMask if multiple providers are injected
-function getMetaMaskProvider(): EthereumProvider | null {
-  const ethereum = window.ethereum as EthereumProvider | undefined;
+// Custom MetaMask type with precise typings
+type MetaMaskProvider = Eip1193Provider & {
+  isMetaMask?: boolean;
+  providers?: MetaMaskProvider[];
+  on?: (event: "accountsChanged", handler: (accounts: string[]) => void) => void;
+  removeListener?: (event: "accountsChanged", handler: (accounts: string[]) => void) => void;
+};
+
+function getMetaMaskProvider(): MetaMaskProvider | null {
+  const ethereum = window.ethereum as MetaMaskProvider;
   if (!ethereum) return null;
 
   if (ethereum.providers?.length) {
