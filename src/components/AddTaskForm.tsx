@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { ethers } from "ethers";
 import abi from "../constants/TodoDappABI.json";
+import toast from "react-hot-toast";
 
 type Props = {
   account: string;
@@ -26,9 +27,15 @@ export default function AddTaskForm({ account, provider, onTaskAdded }: Props) {
       const signer = await provider.getSigner();
       const contract = new ethers.Contract(CONTRACT_ADDRESS, abi, signer);
       const tx = await contract.addTask(title, content);
+      await toast.promise(tx.wait(), {
+        loading: "Adding task...",
+        success: "Task added successfully!",
+        error: "Failed to add task.",
+      });
+
       await tx.wait();
       onTaskAdded(); // ✅ now works correctly
-      alert("Task added successfully!");
+      // alert("Task added successfully!");
       setTitle("");
       setContent("");
     } catch (error) {
