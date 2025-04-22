@@ -2,16 +2,17 @@
 
 import { useState } from "react";
 import { ethers } from "ethers";
-import abi from "../constants/TodoDappABI.json"; // Ensure ABI is exported from your ABI JSON file
+import abi from "../constants/TodoDappABI.json";
 
 type Props = {
   account: string;
   provider: ethers.BrowserProvider | null;
+  onTaskAdded: () => void;
 };
 
-const CONTRACT_ADDRESS = "0x1DCbA5ACbD5e0d535e64281940C69E5618252A51"; // Replace with actual contract address
+const CONTRACT_ADDRESS = "0x1DCbA5ACbD5e0d535e64281940C69E5618252A51";
 
-export default function AddTaskForm({ account, provider }: Props) {
+export default function AddTaskForm({ account, provider, onTaskAdded }: Props) {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [loading, setLoading] = useState(false);
@@ -26,6 +27,7 @@ export default function AddTaskForm({ account, provider }: Props) {
       const contract = new ethers.Contract(CONTRACT_ADDRESS, abi, signer);
       const tx = await contract.addTask(title, content);
       await tx.wait();
+      onTaskAdded(); // ✅ now works correctly
       alert("Task added successfully!");
       setTitle("");
       setContent("");
