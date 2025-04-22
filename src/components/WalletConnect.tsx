@@ -1,22 +1,23 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { ethers } from "ethers";
 
-declare global {
-  interface Window {
-    ethereum?: any;
-  }
+// Type for Ethereum provider from MetaMask
+interface EthereumProvider extends ethers.Eip1193Provider {
+  isMetaMask?: boolean;
+  providers?: EthereumProvider[];
+  request: (args: { method: string; params?: unknown[] }) => Promise<unknown>;
+  on?: (event: string, handler: (...args: unknown[]) => void) => void;
 }
 
 // Filter for MetaMask if multiple providers are injected
-function getMetaMaskProvider(): any {
-  const { ethereum } = window;
-
+function getMetaMaskProvider(): EthereumProvider | null {
+  const ethereum = window.ethereum as EthereumProvider | undefined;
   if (!ethereum) return null;
 
   if (ethereum.providers?.length) {
-    return ethereum.providers.find((p: any) => p.isMetaMask);
+    return ethereum.providers.find((p) => p.isMetaMask) || null;
   }
 
   return ethereum.isMetaMask ? ethereum : null;
@@ -29,26 +30,15 @@ export default function WalletConnect({
 }) {
   const [account, setAccount] = useState<string | null>(null);
 
-  useEffect(() => {
-    const eth = getMetaMaskProvider();
-    if (eth) {
-      eth.on("accountsChanged", connectWallet);
-    }
-  }, []);
-
-  async function connectWallet() {
+  const connectWallet = useCallback(async () => {
     const ethereum = getMetaMaskProvider();
-
     if (!ethereum) {
-      alert("MetaMask is not installed or not set as default Ethereum provider.");
+      alert("MetaMask is not installed or not set as the default Ethereum provider.");
       return;
     }
 
     try {
-      const accounts = await ethereum.request({
-        method: "eth_requestAccounts",
-      });
-
+      await ethereum.request({ method: "eth_requestAccounts" });
       const provider = new ethers.BrowserProvider(ethereum);
       const signer = await provider.getSigner();
       const address = await signer.getAddress();
@@ -58,7 +48,17 @@ export default function WalletConnect({
     } catch (err) {
       console.error("MetaMask connection failed:", err);
     }
-  }
+  }, [onConnected]);
+
+  useEffect(() => {
+    const eth = getMetaMaskProvider();
+    if (eth?.on) {
+      eth.on("accountsChanged", connectWallet);
+    }
+    return () => {
+      if (eth?.on) eth.on("accountsChanged", () => {}); // cleanup
+    };
+  }, [connectWallet]);
 
   return (
     <div className="p-4">
